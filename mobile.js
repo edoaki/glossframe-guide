@@ -18,7 +18,7 @@ async function login(){
  try{sessionStorage.setItem(key+'-oauth',JSON.stringify({verifier,state,time:Date.now()}));}catch{error('このブラウザで一時保存を許可してから再試行してください。');return;}
  const url=new URL(oauth+'auth');
  // Exact identifiers from the registered client; no refresh token is requested.
- url.search=new URLSearchParams({client_id:clientId,scope:'d1.write workers-scripts.edit workers-kv-storage.write ai.write account-settings.read',response_type:'code',redirect_uri:callback,state,code_challenge:challenge,code_challenge_method:'S256'});
+ url.search=new URLSearchParams({client_id:clientId,scope:'d1.write workers-scripts.admin workers-kv-storage.write ai.write account-settings.read',response_type:'code',redirect_uri:callback,state,code_challenge:challenge,code_challenge_method:'S256'});
  location.assign(url);
 }
 async function api(route,body={}){
@@ -76,6 +76,13 @@ $('password-form').onsubmit=event=>{event.preventDefault();const password=$('pas
 $('copy-url').onclick=async()=>{try{await navigator.clipboard.writeText(job.url);$('copy-url').textContent='コピーしました';}catch{error('アプリを開いて、アドレスをコピーしてください。');}};
 async function start(){
  const params=new URLSearchParams(location.search);
+ if(params.get('restart')==='1'){
+  try{localStorage.removeItem(key);sessionStorage.removeItem(key+'-oauth');}
+  catch{screen('connect',0,'リセットできませんでした。');error('このブラウザの保存領域を利用できる状態で、リセットをやり直してください。');$('login').disabled=true;return;}
+  saved={};job={};token='';expires=0;
+  history.replaceState(null,'',location.pathname);
+  screen('connect',0,'進捗をリセットしました。最初から新しく作成します。');return;
+ }
  const code=params.get('code'),state=params.get('state'),denied=params.has('error');
  if(location.search)history.replaceState(null,'',location.pathname);
  screen('connect',0,'Cloudflareに接続すると、ここへ戻って作成できます。');
