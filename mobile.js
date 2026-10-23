@@ -24,7 +24,7 @@ async function login(){
 async function api(route,body={}){
  if(!token||Date.now()>=expires)throw new Error('接続の有効期限が切れました。接続し直して再開してください。');
  const res=await fetch(serviceURL+route,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
- const data=await res.json();if(!res.ok)throw new Error(data.error||'処理が完了しませんでした。');return data;
+ const data=await res.json();if(!res.ok){const failure=new Error(data.error||'処理が完了しませんでした。');failure.status=res.status;throw failure;}return data;
 }
 function selectAccount(){
  const account=$('account').value;
@@ -39,7 +39,12 @@ function selectAccount(){
  $('account').closest('label').hidden=false;
 }
 async function finish(){
- const {url}=await api('/verify',job);
+ let verified;
+ for(let attempt=0;attempt<6;attempt++){
+  try{verified=await api('/verify',job);break;}
+  catch(e){if(e.status!==503||attempt===5)throw e;$('stage').textContent='公開URLの反映を待っています…（'+(attempt+1)+'/6）';await new Promise(resolve=>setTimeout(resolve,5000));}
+ }
+ const {url}=verified;
  job.url=url;persist();
  $('open-app').href=url;screen('complete',3,'セットアップが完了しました。');
  const previous=token;token='';expires=0;
