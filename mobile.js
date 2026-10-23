@@ -17,8 +17,8 @@ async function login(){
  const challenge=bytes64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
  try{sessionStorage.setItem(key+'-oauth',JSON.stringify({verifier,state,time:Date.now()}));}catch{error('このブラウザで一時保存を許可してから再試行してください。');return;}
  const url=new URL(oauth+'auth');
- // Registered permission scopes are the provider default; no refresh token is requested.
- url.search=new URLSearchParams({client_id:clientId,response_type:'code',redirect_uri:callback,state,code_challenge:challenge,code_challenge_method:'S256'});
+ // Exact identifiers from the registered client; no refresh token is requested.
+ url.search=new URLSearchParams({client_id:clientId,scope:'d1.write workers-scripts.edit workers-kv-storage.write ai.write account-settings.read',response_type:'code',redirect_uri:callback,state,code_challenge:challenge,code_challenge_method:'S256'});
  location.assign(url);
 }
 async function api(route,body={}){
