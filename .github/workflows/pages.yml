@@ -24,7 +24,7 @@ jobs:
           mkdir _site
           cp index.html mobile-accounts.html style.css guide.js _site/
           cp -R assets _site/
-          if [ -f mobile.html ]; then cp mobile.html _site/; fi
+          if [ -f mobile.html ]; then cp mobile.html mobile.css mobile.js mobile-config.js _site/; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
