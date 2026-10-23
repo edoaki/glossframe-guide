@@ -33,7 +33,8 @@ function selectAccount(){
  persist();
  $('password-form').hidden=Boolean(job.ownerReady);
  $('resume').hidden=!job.ownerReady;
- screen('password-step',1,job.ownerReady?'前回の作成記録が見つかりました。同じ環境で再開できます。':'接続できました。次はアプリのパスワードです。');
+ $('password-step').append($('reconnect'));$('reconnect').hidden=false;
+ screen('password-step',1,job.ownerReady?'前回の作成記録が見つかりました。同じ環境で再開できます。':'ログインとアカウントの取得が完了しました。作成の許可は各処理で確認します。');
  // Keep the account selector available even after owner registration.
  $('account').closest('label').hidden=false;
 }
@@ -64,7 +65,7 @@ async function create(password=''){
   Object.assign(job,await api('/publish',{...job,jwt}));persist();
   stage(4,'公開URLを確認しています…');await finish();stage(5,'完了しました。');
  }catch(e){
-  error(e.message);
+  error($('stage').textContent.replace(/…$/,'')+'で停止しました。'+e.message);
   if(!job.ownerReady){screen('password-step',1,'作成を再開できます。同じパスワードを入力してください。');$('password-form').hidden=false;}
   else{$('retry').hidden=false;$('stage').textContent='処理は停止しています。作成済みのデータは保持しています。';$('reconnect').hidden=false;$('building').append($('reconnect'));}
  }finally{password='';busy=false;}
